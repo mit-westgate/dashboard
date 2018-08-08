@@ -2,12 +2,14 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import {
-  WeatherComponent,
   BusScheduleComponent,
+  EventComponent,
+  WeatherComponent,
   LaundryComponent,
+  TimeComponent,
   } from './components';
 
-class App extends React.Component<{greeting: string}, {count :number}> {
+class App extends React.Component {
   state = {count :0};
 
   componentDidMount() {
@@ -15,19 +17,19 @@ class App extends React.Component<{greeting: string}, {count :number}> {
 
   render () {
     return (
-      <div>
-        <h2>{this.props.greeting}</h2>
-        <button onClick={() => this.setState({count : this.state.count + 1})}>
-          This button has been clicked {this.state.count} times.
-        </button>
-      <WeatherComponent/>
-      <BusScheduleComponent/>
-      <LaundryComponent/>
+      <div className="container">
+      <EventComponent/>
+      <div className="others">
+        <TimeComponent/>
+        <BusScheduleComponent/>
+        <WeatherComponent/>
+        <LaundryComponent/>
+      </div>
       </div>);
   }
 }
 
 ReactDOM.render(
-  <App greeting="Hello world!"/>,
+  <App />,
   document.getElementById('app')
 );

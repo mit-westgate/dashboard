@@ -1,44 +1,69 @@
-// import {kelvinToFarenheit, kelvinToCelcius} from "./helper";
-import {kelvinToCelcius} from "./helper";
+import {kelvinToFarenheit} from "./helper";
 
 const weatherApiKey :string = "d275bbb2a87af0a991c344946631dd92";
 
-export function weatherApi ()  {
+export async function weatherApi (): Promise<{tempurature:number, weather: string}> {
   let url: string = `https://api.openweathermap.org/data/2.5/weather?q=Boston,us&APPID=${weatherApiKey}`;
 
-  fetch(url)
-    .then((response: Response)=> response.json())
-    .then((json) => {
-      console.log(kelvinToCelcius(+json['main']['temp']));
-    });
+  return fetch(url)
+  .then((response: Response)=> response.json())
+  .then((json) => {
+    let tempurature = Math.round(10 * kelvinToFarenheit(+json['main']['temp'])) / 10.0;
+    let weather = json['weather'][0]['main'];
+    return {tempurature, weather}
+  });
 
 }
 
-export function nextBusApi () {
+interface Predictions{
+  predictions:{
+    direction?:{
+      title?: String
+      prediction?: Prediction[]
+    }
+  }
+}
+
+interface Prediction{
+  minutes: number,
+  seconds: number,
+}
+
+export async function nextBusApi(): Promise<number[]> {
   let url: string = 'http://webservices.nextbus.com/service/publicJSONFeed?command=predictions&a=mit&r=tech&s=tangwest';
 
-  fetch(url)
-    .then((response: Response) => response.json())
-    .then((json) => {
-      console.log(json);
-    });
+  return fetch(url)
+  .then((response: Response) => response.json())
+  .then((json: Predictions) => {
+
+    console.log(json);
+
+    if(json.predictions.direction){
+      if(json.predictions.direction.prediction){
+        return json.predictions.direction.prediction.map((p) => p.seconds)
+      } else {
+        return []
+      }
+     }else {
+      return []
+     }
+  })
 }
 
-export function laundryView () {
-  let url: string = 'https://laundryview.com/api/currentRoomData?location=1364814';
-  
-  // let options = {
-  //   method: 'GET',
-  //   headers:{
-  //     'Access-Control-Allow-Origin': '*',
-  //     'Access-Control-Allow-Credentials': 'true',
-  //     'Access-Control-Allow-Methods': 'POST, GET'
-  //   }
-  // };
+export async function laundryView (): Promise<{last_update: number, washers: number, dryers:number}> {
+  let url: string = 'https://cityio.media.mit.edu/westgate/status';
 
-  fetch(url)
-    .then((response: Response) => response.json())
-    .then((contents) => {
-      console.log(contents);
-    });
+  return fetch(url)
+  .then((response: Response) => response.json())
+  .then((json) => {
+
+    let last_update = json['last_query']['secs_since_epoch'] * 1000;
+
+    return {
+      last_update,
+      washers: json['laundry']['washers'],
+      dryers: json['laundry']['dryers'],
+    }
+  });
 }
+
